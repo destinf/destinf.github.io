@@ -1,0 +1,32 @@
+# Proxmox
+
+I recently learned about [Proxmox](https://www.proxmox.com) after a coworker told me about [unraid](https://unraid.net).
+Previously I was inspired by the [Homelab subreddit](https://reddit.com/r/homelab) to run my own homelab, which I did using an old laptop running [k3s](https://k3s.io), with everything dockerized.
+
+## First point of confusion
+First thing I did was try to spin up a container. I started off a bit confused because due to my previous homelab, I just assumed that they were talking about docker containers. Really though, proxmox supports Linux Containers.
+Luckily, I found the built-in Container Templates pretty quickly and soon had my first container running inside my Proxmox system.
+
+## Importing my existing system
+I wanted a way to quickly import my existing system into proxmox, as I had a ton of stuff configured.
+As much ease of use as k3s provided to potentially add new nodes, I definitely did some crazy stuff on top of it.
+For example, I wanted to mount an external NAS so that some of the k3s pods could access it.
+I had automounting all set up inside my old system, and I didn't really want to bothering reconfiguring it.
+
+### Clonezilla
+Luckily, Proxmox has a [guide to migrating servers into Proxmox](https://pve.proxmox.com/wiki/Migration_of_servers_to_Proxmox_VE).
+I grabbed a copy of the Clonezilla Live image, ran one on my old laptop server and another in a VM in Proxmox.
+Admittedly I got confused at first with the different options, and a lot of the help guides online weren't up to date, mentioning menu items that didn't exist in the current iteration of Clonezilla.
+In short:
+Old Laptop Server -> Clonezilla(load into ram) -> remote-source
+New Proxmox VM -> Clonezilla(load into ram) -> remote-dest -> Enter IP Address of the Old Laptop Server (it will show in the Old Laptop Server console messages)
+
+First few times, it finished way too quickly to have copied over 480 GB of data. Checking the new VM it definitely didn't work.
+I figured out that I should set the clonezilla cloning tool to enter the command line after the operations were done.
+Checked the /var/log/clonezilla directory, and figured out that I had set the HD size in the VM to way too small of a size.
+Resized the VM HD to something larger than the 480 GB of the Old Laptop Server, and it got to work copying!
+
+After checking successfully copying, I checked the amount of data in the VM, and I definitely don't need to have 480+ GB allocated. Next step will be to shrink the HD size!
+
+## Things I Learned
+* [Linux Containers vs Docker Containers](https://educba.com/lxc-vs-docker)
